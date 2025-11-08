@@ -1,0 +1,24 @@
+discover_rfp_links:
+  description: >
+    Scan the website {target_url} to find all PDF links.
+    Focus on RFPs, tenders, or procurement notices.
+  expected_output: >
+    A JSON list of PDF URLs with context about each document.
+  agent: rfp_finder
+
+extract_pdf_content:
+  description: >
+    Download and extract content from each PDF URL.
+    Check if documents are new (within last {days_threshold} days).
+    Save PDFs to data/raw directory.
+  expected_output: >
+    JSON list with extracted text, metadata, and date information.
+  agent: pdf_processor
+
+analyze_rfp_data:
+  description: >
+    Analyze extracted RFPs and identify key information including
+    deadlines, requirements, budget, and contact details.
+  expected_output: >
+    Comprehensive JSON report saved to data/processed directory.
+  agent: rfp_analyst

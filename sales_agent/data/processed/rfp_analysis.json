@@ -1,0 +1,504 @@
+Thought: The user wants a comprehensive JSON report based on the provided RFP data. The task is to analyze extracted RFP data and identify key information. I have been given a list of RFPs, each with a `url` and `context`. Crucially, only the *first* RFP in the list includes the `extracted_content` field containing the `text` for analysis. For all subsequent RFPs, only the `url` and `context` are provided, meaning their text content is not available for extraction in this context.
+
+My plan is:
+1.  Initialize an empty list to store the processed RFP reports.
+2.  Iterate through the provided list of RFP items.
+3.  For the *first* RFP item, I will meticulously parse the `extracted_content.text` to extract the `submission_deadline`, `bid_opening_date`, `bid_offer_validity_days`, `organization_details`, `scope_of_work`, `requirements`, `budget_range` (not specified in text, so will be "Not specified"), and `contact_details` (not specified in text, so will be "Not specified"). I will also include the original `extracted_content` block for this item in the output.
+4.  For all *subsequent* RFP items in the list, since their `extracted_content.text` is not provided in the prompt, I will indicate that detailed extraction was not possible. I will still include their `url` and `context`.
+5.  The final output will be a JSON array containing all processed RFP objects.
+
+Let's break down the parsing for the first item's `text`:
+
+**Raw Text Snippets and Extracted Values:**
+
+*   `Bid End Date/Time\n25-11-2025 14:00:00` -> `submission_deadline`: "25-11-2025 14:00:00"
+*   `Bid Opening Date/Time\n25-11-2025 14:30:00` -> `bid_opening_date`: "25-11-2025 14:30:00"
+*   `Bid Offer\nValidity (From End Date)\n180 (Days)` -> `bid_offer_validity_days`: 180 (parsed as integer)
+*   `Ministry/State Name\nMinistry Of Education` -> `organization_details.ministry`: "Ministry Of Education"
+*   `Department Name\nDepartment Of Higher Education` -> `organization_details.department`: "Department Of Higher Education"
+*   `Organisation Name\nNational Institute Of Technology (nit)` -> `organization_details.organization`: "National Institute Of Technology (nit)"
+*   `Office Name\nNit Jamshedpur` -> `organization_details.office`: "Nit Jamshedpur"
+*   `Total Quantity\n2` -> `scope_of_work.total_quantity`: 2 (parsed as integer)
+*   `Item Category\nWireless Communication Test Bed` -> `scope_of_work.item_category`: "Wireless Communication Test Bed"
+*   `Searched\nStrings used in GeMARPTS\nWireless Communication Test Bed` -> `scope_of_work.gemarpts_searched_strings`: "Wireless Communication Test Bed"
+*   `Searched\nResult generated in GeMARPTS\nRADIO COMMUNICATION TEST SET (ANALOG / DIGITAL),\nRadio Communication Test Set as per MHA QR (V2), Hand\nHeld / Wireless Real Time Viewing System as per MHA QR` -> `scope_of_work.gemarpts_search_result`: "RADIO COMMUNICATION TEST SET (ANALOG / DIGITAL), Radio Communication Test Set as per MHA QR (V2), Hand Held / Wireless Real Time Viewing System as per MHA QR"
+*   `Relevant\nCategories selected for notification\nRADIO COMMUNICATION TEST SET (ANALOG / DIGITAL)\nVCCS: Voice communication and control systems (AAI)\nCounter Communication System` -> `scope_of_work.relevant_notification_categories`: ["RADIO COMMUNICATION TEST SET (ANALOG / DIGITAL)", "VCCS: Voice communication and control systems (AAI)", "Counter Communication System"] (split by newline and cleaned)
+*   `Minimum Average Annual Turnover of the\nbidder (For 3 Years)\n3 Lakh (s)` -> `requirements.minimum_average_annual_turnover_bidder_lakhs`: 3 (parsed as integer)
+*   `OEM Average Turnover (Last 3 Years)\n24 Lakh (s)` -> `requirements.oem_average_turnover_lakhs`: 24 (parsed as integer)
+*   `Years of Past Experience Required for\nsame/similar service\n3 Year (s)` -> `requirements.years_past_experience_required`: 3 (parsed as integer)
+*   `MSE Exemption for \nYears Of Experience\nand\n \n \nTurnover\nYes \n| \nComplete` -> `requirements.mse_exemption`: "Yes | Complete"
+*   `Startup Exemption for \nYears Of\nExperience \nand\n \n \nTurnover\nYes \n| \nComplete` -> `requirements.startup_exemption`: "Yes | Complete"
+*   `Bid\n \nNumber\n: \nGEM/2025/B/6853421` -> `rfp_id`: "GEM/2025/B/6853421"
+*   `Dated\n: 04-11-2025` -> `rfp_date`: "04-11-2025"
+*   `Document required\nfrom seller\nExperience Criteria,Past Performance,Bidder Turnover,OEM\nAuthorization Certificate,OEM Annual Turnover` -> `requirements.documents_required_from_seller`: ["Experience Criteria", "Past Performance", "Bidder Turnover", "OEM Authorization Certificate", "OEM Annual Turnover"] (split by comma and cleaned)
+
+I will ensure to clean up extraneous characters and newlines during parsing.
+Budget and Contact Details are not explicitly mentioned in the provided text for the first RFP, so they will be marked as "Not specified".```json
+[
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/4b5ad7d3-2baa-4755-9b9d-923ac91716b5-GeM-Bidding-8545578_Published%20(2).pdf",
+    "context": "GeM-Bidding-8545578_Published (2)",
+    "extracted_content": {
+      "url": "https://nitjsr.ac.in/backend/uploads/tender/add/4b5ad7d3-2baa-4755-9b9d-923ac91716b5-GeM-Bidding-8545578_Published%20(2).pdf",
+      "filename": "4b5ad7d3-2baa-4755-9b9d-923ac91716b5-GeM-Bidding-8545578_Published%20(2).pdf",
+      "filepath": "data/raw\\4b5ad7d3-2baa-4755-9b9d-923ac91716b5-GeM-Bidding-8545578_Published%20(2).pdf",
+      "text": "\x01बड\n\x01बड\n \n \n\x01ववरण\n\x01ववरण\n/\n/\nBid\n \n \nDetails\n\x01बड\n\x01बड\n \n \nबंद\nबंद\n \n \nहोने\nहोने\n \n \nक\x10\nक\x10\n \n \nतार\x13ख\nतार\x13ख\n/\n/\nसमय\nसमय\n \n \n/Bid End Date/Time\n25-11-2025 14:00:00\n\x01बड\n\x01बड\n \n \nखुलने\nखुलने\n \n \nक\x10\nक\x10\n \n \nतार\x13ख\nतार\x13ख\n/\n/\nसमय\nसमय\n \n \n/Bid Opening\nDate/Time\n25-11-2025 14:30:00\n\x01बड\n\x01बड\n \n \nपेशकश\nपेशकश\n \n \nवैधता\nवैधता\n (\n (\nबंद\nबंद\n \n \nहोने\nहोने\n \n \nक\x10\nक\x10\n \n \nतार\x13ख\nतार\x13ख\n \n \nसे\nसे\n)\n)\n/Bid Offer\nValidity (From End Date)\n180 (Days)\nमं ालय\nमं ालय\n/\n/\nरा!य\nरा!य\n \n \nका\nका\n \n \nनाम\nनाम\n/Ministry/State Name\nMinistry Of Education\n\x01वभाग\n\x01वभाग\n \n \nका\nका\n \n \nनाम\nनाम\n/Department Name\nDepartment Of Higher Education\nसंगठन\nसंगठन\n \n \nका\nका\n \n \nनाम\nनाम\n/Organisation Name\nNational Institute Of Technology (nit)\nकाया%लय\nकाया%लय\n \n \nका\nका\n \n \nनाम\nनाम\n/Office Name\nNit Jamshedpur\nकुल\nकुल\n \n \nमा ा\nमा ा\n/Total Quantity\n2\nव&तु\nव&तु\n \n \n\'ेणी\n\'ेणी\n \n \n/Item Category\nWireless Communication Test Bed\nGeMARPTS\n \n \nम)\nम)\n \n \nखोजी\nखोजी\n \n \nगई\nगई\n \n \n,&-ं.स\n,&-ं.स\n / Searched\nStrings used in GeMARPTS\nWireless Communication Test Bed\nGeMARPTS\n \n \nम)\nम)\n \n \nखोजा\nखोजा\n \n \nगया\nगया\n \n \nप/रणाम\nप/रणाम\n / Searched\nResult generated in GeMARPTS\nRADIO COMMUNICATION TEST SET (ANALOG / DIGITAL),\nRadio Communication Test Set as per MHA QR (V2), Hand\nHeld / Wireless Real Time Viewing System as per MHA QR\nअिधसूचना\nअिधसूचना\n \n \nके\nके\n \n \nिलए\nिलए\n \n \nचयिनत\nचयिनत\n \n \n5ासंिगक\n5ासंिगक\n \n \n\'े,णयाँ\n\'े,णयाँ\n / Relevant\nCategories selected for notification\nRADIO COMMUNICATION TEST SET (ANALOG / DIGITAL)\nVCCS: Voice communication and control systems (AAI)\nCounter Communication System\n\x01बडर\n\x01बडर\n \n \nका\nका\n \n \n7यूनतम\n7यूनतम\n \n \nऔसत\nऔसत\n \n \nवा\x01ष%क\nवा\x01ष%क\n \n \nटन%ओवर\nटन%ओवर\n (3 \n (3 \nवष=\nवष=\n \n \nका\nका\n)\n)\n/Minimum Average Annual Turnover of the\nbidder (For 3 Years)\n3 Lakh (s)\nमूल\nमूल\n \n \nउपकरण\nउपकरण\n \n \nिनमा%ता\nिनमा%ता\n \n \nका\nका\n \n \nऔसत\nऔसत\n \n \nटन%ओवर\nटन%ओवर\n (\n (\nगत\nगत\n 3 \n 3 \nवष=\nवष=\nका\nका\n)\n)\n/OEM Average Turnover (Last 3 Years)\n24 Lakh (s)\nउ7ह\x13ं\nउ7ह\x13ं\n/\n/\nसमान\nसमान\n \n \nसेवा\nसेवा\n \n \nके\nके\n \n \nिलए\nिलए\n \n \nअपे,?त\nअपे,?त\n \n \n\x01वगत\n\x01वगत\n \n \nअनुभव\nअनुभव\n \n \nके\nके\nवष%\nवष%\n/Years of Past Experience Required for\nsame/similar service\n3 Year (s)\nवष=\nवष=\n \nके\nके\n \nअनुभव\nअनुभव\n \nएवं\nएवं\n \nटन%ओवर\nटन%ओवर\n \nसे\nसे\n \nएमएसई\nएमएसई\n \nको\nको\n \nछूट\nछूट\n \n5ाA\n5ाA\n \nहै\nहै\n /\nMSE Exemption for \nYears Of Experience\nand\n \n \nTurnover\nYes \n| \nComplete\n&टाट%अप\n&टाट%अप\n \nके\nके\n \nिलए\nिलए\n \nअनुभव\nअनुभव\n \nके\nके\n \nवष=\nवष=\n \nऔर\nऔर\n \nटन%ओवर\nटन%ओवर\n \nसे\nसे\n \nछूट\nछूट\n \n5दान\n5दान\nक\x10\nक\x10\n \nगई\nगई\n \nहै\nहै\n / Startup Exemption for \nYears Of\nExperience \nand\n \n \nTurnover\nYes \n| \nComplete\n \n\x01बड\n \nसंBया\n/\nBid\n \nNumber\n: \nGEM/2025/B/6853421\nCदनांक\n /\nDated\n: 04-11-2025\n\x01बड\n\x01बड\n \n \nद&तावेज़\nद&तावेज़\n / Bid Document\n1 / 11\x01वLेता\n\x01वLेता\n \n \nसे\nसे\n \n \nमांगे\nमांगे\n \n \nगए\nगए\n \n \nद&तावेज़\nद&तावेज़\n/Document required\nfrom seller\nExperience Criteria,Past Performance,Bidder Turnover,OEM\nAuthorization Certificate,OEM Annual Turnover\n*In case any bidder is seeking exemption from Experience /\nTurnover Criteria, the supporting documents to prove his\neligibility for exemption must be uploaded for evaluation by\nthe buyer\nMया\nMya\n \n \nआप\nआप\n \n \nिन\x01वदाकारO\nिन\x01वदाकारO\n \n \nPारा\nPara\n \n \nअपलोड\nअपलोड\n \n \nCकए\nCकए\n \n \nगए\nगए\n \n \nद&तावेज़O\nद&तावेज़O\n \n \nको\nको\nिन\x01वदा\nिन\x01वदा\n \n \nम)\nम)\n \n \nभाग\nभाग\n \n \nलेने\nलेने\n \n \nवाले\nवाले\n \n \nसभी\nसभी\n \n \nिन\x01वदाकारO\nिन\x01वदाकारO\n \n \nको\nको\n \n \nCदखाना\nCदखाना\nचाहते\nचाहते\n \n \nहQ\nहQ\n? \n? \nसंदभ%\nसंदभ%\n \n \nमेनू\nमेनू\n \n \nहै\nहै\n/Do you want to show\ndocuments uploaded by bidders to all\nbidders participated in bid?\nYes"
+    },
+    "parsed_rfp_data": {
+      "rfp_id": "GEM/2025/B/6853421",
+      "rfp_date": "04-11-2025",
+      "submission_deadline": "25-11-2025 14:00:00",
+      "bid_opening_date": "25-11-2025 14:30:00",
+      "bid_offer_validity_days": 180,
+      "organization_details": {
+        "ministry": "Ministry Of Education",
+        "department": "Department Of Higher Education",
+        "organization": "National Institute Of Technology (nit)",
+        "office": "Nit Jamshedpur"
+      },
+      "scope_of_work": {
+        "item_category": "Wireless Communication Test Bed",
+        "total_quantity": 2,
+        "gemarpts_searched_strings": "Wireless Communication Test Bed",
+        "gemarpts_search_result": "RADIO COMMUNICATION TEST SET (ANALOG / DIGITAL), Radio Communication Test Set as per MHA QR (V2), Hand Held / Wireless Real Time Viewing System as per MHA QR",
+        "relevant_notification_categories": [
+          "RADIO COMMUNICATION TEST SET (ANALOG / DIGITAL)",
+          "VCCS: Voice communication and control systems (AAI)",
+          "Counter Communication System"
+        ]
+      },
+      "requirements": {
+        "minimum_average_annual_turnover_bidder_lakhs": 3,
+        "oem_average_turnover_lakhs": 24,
+        "years_past_experience_required": 3,
+        "mse_exemption": "Yes | Complete",
+        "startup_exemption": "Yes | Complete",
+        "documents_required_from_seller": [
+          "Experience Criteria",
+          "Past Performance",
+          "Bidder Turnover",
+          "OEM Authorization Certificate",
+          "OEM Annual Turnover"
+        ]
+      },
+      "budget_range": "Not specified",
+      "contact_details": "Not specified"
+    }
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/a16d11ec-bbcc-471e-a1b0-5388022dc1dd-GeM-Bidding-8541254_Published.pdf",
+    "context": "GeM-Bidding-8541254_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/82ec68d8-add8-4ce0-97cb-45b54c684802-GeM-Bidding-8517033_Published.pdf",
+    "context": "GeM-Bidding-8517033_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/adafb60b-f062-473c-a63e-f508ab56a690-GeM-Bidding-8515545_Published.pdf",
+    "context": "GeM-Bidding-8515545_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/a811edb3-c40b-4f81-91c2-ff962969d947-GeM-Bidding-8508976_Published.pdf",
+    "context": "GeM-Bidding-8508976_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/92563734-e277-4161-914b-13e345ceda1c-Tendernotice_1%20(6).pdf",
+    "context": "Tendernotice_1 (6)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/3e40a429-a01b-45c6-ae6e-f1612a673e65-GeM-Bidding-8441950_Published%20(1).pdf",
+    "context": "GeM-Bidding-8441950_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/db0f8904-f37f-4416-97cc-7aea04293fb6-GeM-Bidding-8484028_Published.pdf",
+    "context": "GeM-Bidding-8484028_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/8470a7b4-9a3d-4c3d-b4ef-593b480749e7-GeM-Bidding-8348512_Published.pdf",
+    "context": "GeM-Bidding-8348512_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/ef8ec26f-9989-40ea-92d5-9bf8d1847e09-GeM-Bidding-8370138_Published%20(1).pdf",
+    "context": "GeM-Bidding-8370138_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/25f16f0b-47e2-45e0-8278-f73629f63558-Tendernotice_1%20(5).pdf",
+    "context": "Tendernotice_1 (5)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/aa5e5891-66df-4993-9092-d6215c0e1814-GeM-Bidding-8255952_Published.pdf",
+    "context": "GeM-Bidding-8255952_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/599e585f-0044-486a-aa78-0ed5c3f156d9-Tendernotice_1%20(4).pdf",
+    "context": "Tendernotice_1 (4)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/09f3d6a9-063f-42e7-9d62-e221d8b13d28-GeM-Bidding-8230238_Published.pdf",
+    "context": "GeM-Bidding-8230238_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/77c95781-fb81-420a-86c8-50ed27b4e727-GeM-Bidding-8199960_Published.pdf",
+    "context": "GeM-Bidding-8199960_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/fb155dd5-16e6-42d4-a8ae-4f243026f7c1-GeM-Bidding-8153091_Published.pdf",
+    "context": "GeM-Bidding-8153091_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/40c30932-a544-4347-a8b2-54070776b325-GeM-Bidding-8133509_Published.pdf",
+    "context": "GeM-Bidding-8133509_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/73c4d96a-208e-4a64-9273-df33a59d9976-GeM-Bidding-8120353_Published.pdf",
+    "context": "GeM-Bidding-8120353_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/25c34537-8854-469b-980b-e5088f1f7d26-GeM-Bidding-8106198_Published.pdf",
+    "context": "GeM-Bidding-8106198_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/822b39f7-7b19-4972-888e-c9df25f14e76-GeM-Bidding-8064408_Published.pdf",
+    "context": "GeM-Bidding-8064408_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/c69e2230-6d0c-4860-9104-e55d6484e5b6-GeM-Bidding-8051752_Published.pdf",
+    "context": "GeM-Bidding-8051752_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/d8c11dd8-b997-4009-88c2-3e284f18d6a8-Tendernotice_1%20(3).pdf",
+    "context": "Tendernotice_1 (3)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/5021200f-7b00-47b7-8d89-c1831c19b67f-GeM-Bidding-7988582_Published.pdf",
+    "context": "GeM-Bidding-7988582_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/c117d915-d71d-4874-a09c-6a1005a5a67f-GeM-Bidding-7977815_Published.pdf",
+    "context": "GeM-Bidding-7977815_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/09f06117-6889-4b68-80e9-b5472855756c-GeM-Bidding-7965004_Published.pdf",
+    "context": "GeM-Bidding-7965004_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/d4ee133e-b830-4e4b-9721-c4d3753bf420-GeM-Bidding-7953258_Published.pdf",
+    "context": "GeM-Bidding-7953258_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/68c85743-7f39-445a-bf19-0ed5c98d660a-Tendernotice_1%20(2).pdf",
+    "context": "Tendernotice_1 (2)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/63351d36-0775-4c07-ba71-b05b38ed3529-GeM-Bidding-7925578_Published.pdf",
+    "context": "GeM-Bidding-7925578_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/599e585f-0044-486a-aa78-0ed5c3f156d9-Tendernotice_1%20(1).pdf",
+    "context": "Tendernotice_1 (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/599e585f-0044-486a-aa78-0ed5c3f156d9-Tendernotice_1.pdf",
+    "context": "Tendernotice_1",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/fd29b47e-908d-4ee8-a5b5-4b0d0c2e3646-GeM-Bidding-7871276_Published.pdf",
+    "context": "GeM-Bidding-7871276_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/6a56e297-f5ac-4a25-a22c-7389c9335f60-GeM-Bidding-7856488_Published.pdf",
+    "context": "GeM-Bidding-7856488_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/9d01f11a-035b-4355-827d-088f615392d4-GeM-Bidding-7848696_Published.pdf",
+    "context": "GeM-Bidding-7848696_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/a4f4d2f8-0041-4796-9f89-c4c0423c21c7-GeM-Bidding-7837059_Published.pdf",
+    "context": "GeM-Bidding-7837059_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/7f763261-1d53-488b-a43b-7f61b17a12b6-GeM-Bidding-7828066_Published.pdf",
+    "context": "GeM-Bidding-7828066_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/2ed5080e-e28e-4ec1-9f93-41e9882a6f44-GeM-Bidding-7820173_Published.pdf",
+    "context": "GeM-Bidding-7820173_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/8cf23b01-57d6-444a-995b-01309f3ed177-GeM-Bidding-7798305_Published.pdf",
+    "context": "GeM-Bidding-7798305_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/09f3d6a9-063f-42e7-9d62-e221d8b13d28-GeM-Bidding-8230238_Published%20(1).pdf",
+    "context": "GeM-Bidding-8230238_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/5021200f-7b00-47b7-8d89-c1831c19b67f-GeM-Bidding-7988582_Published%20(1).pdf",
+    "context": "GeM-Bidding-7988582_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/1ff414e2-63b7-4f9e-a2f2-302a4fc0a92d-GeM-Bidding-7734107_Published.pdf",
+    "context": "GeM-Bidding-7734107_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/ee5a2894-0690-482c-b51f-5ac6317b961f-GeM-Bidding-7722744_Published.pdf",
+    "context": "GeM-Bidding-7722744_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/f0980c65-8120-435d-8549-2e6b22b64d09-GeM-Bidding-7714856_Published.pdf",
+    "context": "GeM-Bidding-7714856_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/8276f755-d36c-4861-9c3a-231a47738f72-GeM-Bidding-7704250_Published.pdf",
+    "context": "GeM-Bidding-7704250_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/25f16f0b-47e2-45e0-8278-f73629f63558-Tendernotice_1.pdf",
+    "context": "Tendernotice_1",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/4b1778c1-1772-4d05-ac10-4c3e34a174df-GeM-Bidding-7678491_Published.pdf",
+    "context": "GeM-Bidding-7678491_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/09f3d6a9-063f-42e7-9d62-e221d8b13d28-GeM-Bidding-8230238_Published%20(2).pdf",
+    "context": "GeM-Bidding-8230238_Published (2)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/c2912a76-2f08-41ec-b7df-789a74aa97b7-GeM-Bidding-7649568_Published.pdf",
+    "context": "GeM-Bidding-7649568_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/c117d915-d71d-4874-a09c-6a1005a5a67f-GeM-Bidding-7977815_Published%20(1).pdf",
+    "context": "GeM-Bidding-7977815_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/d4ee133e-b830-4e4b-9721-c4d3753bf420-GeM-Bidding-7953258_Published%20(1).pdf",
+    "context": "GeM-Bidding-7953258_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/92563734-e277-4161-914b-13e345ceda1c-Tendernotice_1.pdf",
+    "context": "Tendernotice_1",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/3e40a429-a01b-45c6-ae6e-f1612a673e65-GeM-Bidding-8441950_Published.pdf",
+    "context": "GeM-Bidding-8441950_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/8470a7b4-9a3d-4c3d-b4ef-593b480749e7-GeM-Bidding-8348512_Published%20(1).pdf",
+    "context": "GeM-Bidding-8348512_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/db0f8904-f37f-4416-97cc-7aea04293fb6-GeM-Bidding-8484028_Published%20(1).pdf",
+    "context": "GeM-Bidding-8484028_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/ef8ec26f-9989-40ea-92d5-9bf8d1847e09-GeM-Bidding-8370138_Published.pdf",
+    "context": "GeM-Bidding-8370138_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/09f06117-6889-4b68-80e9-b5472855756c-GeM-Bidding-7965004_Published%20(1).pdf",
+    "context": "GeM-Bidding-7965004_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/68c85743-7f39-445a-bf19-0ed5c98d660a-Tendernotice_1.pdf",
+    "context": "Tendernotice_1",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/d8c11dd8-b997-4009-88c2-3e284f18d6a8-Tendernotice_1.pdf",
+    "context": "Tendernotice_1",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/63351d36-0775-4c07-ba71-b05b38ed3529-GeM-Bidding-7925578_Published%20(1).pdf",
+    "context": "GeM-Bidding-7925578_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/4b5ad7d3-2baa-4755-9b9d-923ac91716b5-GeM-Bidding-8545578_Published.pdf",
+    "context": "GeM-Bidding-8545578_Published",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/a16d11ec-bbcc-471e-a1b0-5388022dc1dd-GeM-Bidding-8541254_Published%20(1).pdf",
+    "context": "GeM-Bidding-8541254_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/82ec68d8-add8-4ce0-97cb-45b54c684802-GeM-Bidding-8517033_Published%20(1).pdf",
+    "context": "GeM-Bidding-8517033_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/adafb60b-f062-473c-a63e-f508ab56a690-GeM-Bidding-8515545_Published%20(1).pdf",
+    "context": "GeM-Bidding-8515545_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/a811edb3-c40b-4f81-91c2-ff962969d947-GeM-Bidding-8508976_Published%20(1).pdf",
+    "context": "GeM-Bidding-8508976_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/1ff414e2-63b7-4f9e-a2f2-302a4fc0a92d-GeM-Bidding-7734107_Published%20(1).pdf",
+    "context": "GeM-Bidding-7734107_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/ee5a2894-0690-482c-b51f-5ac6317b961f-GeM-Bidding-7722744_Published%20(1).pdf",
+    "context": "GeM-Bidding-7722744_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/f0980c65-8120-435d-8549-2e6b22b64d09-GeM-Bidding-7714856_Published%20(1).pdf",
+    "context": "GeM-Bidding-7714856_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/8276f755-d36c-4861-9c3a-231a47738f72-GeM-Bidding-7704250_Published%20(1).pdf",
+    "context": "GeM-Bidding-7704250_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/4b1778c1-1772-4d05-ac10-4c3e34a174df-GeM-Bidding-7678491_Published%20(1).pdf",
+    "context": "GeM-Bidding-7678491_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/c2912a76-2f08-41ec-b7df-789a74aa97b7-GeM-Bidding-7649568_Published%20(1).pdf",
+    "context": "GeM-Bidding-7649568_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/fd29b47e-908d-4ee8-a5b5-4b0d0c2e3646-GeM-Bidding-7871276_Published%20(1).pdf",
+    "context": "GeM-Bidding-7871276_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/6a56e297-f5ac-4a25-a22c-7389c9335f60-GeM-Bidding-7856488_Published%20(1).pdf",
+    "context": "GeM-Bidding-7856488_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/9d01f11a-035b-4355-827d-088f615392d4-GeM-Bidding-7848696_Published%20(1).pdf",
+    "context": "GeM-Bidding-7848696_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/a4f4d2f8-0041-4796-9f89-c4c0423c21c7-GeM-Bidding-7837059_Published%20(1).pdf",
+    "context": "GeM-Bidding-7837059_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/7f763261-1d53-488b-a43b-7f61b17a12b6-GeM-Bidding-7828066_Published%20(1).pdf",
+    "context": "GeM-Bidding-7828066_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/2ed5080e-e28e-4ec1-9f93-41e9882a6f44-GeM-Bidding-7820173_Published%20(1).pdf",
+    "context": "GeM-Bidding-7820173_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/8cf23b01-57d6-444a-995b-01309f3ed177-GeM-Bidding-7798305_Published%20(1).pdf",
+    "context": "GeM-Bidding-7798305_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/aa5e5891-66df-4993-9092-d6215c0e1814-GeM-Bidding-8255952_Published%20(1).pdf",
+    "context": "GeM-Bidding-8255952_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/77c95781-fb81-420a-86c8-50ed27b4e727-GeM-Bidding-8199960_Published%20(1).pdf",
+    "context": "GeM-Bidding-8199960_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/fb155dd5-16e6-42d4-a8ae-4f243026f7c1-GeM-Bidding-8153091_Published%20(1).pdf",
+    "context": "GeM-Bidding-8153091_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/40c30932-a544-4347-a8b2-54070776b325-GeM-Bidding-8133509_Published%20(1).pdf",
+    "context": "GeM-Bidding-8133509_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/73c4d96a-208e-4a64-9273-df33a59d9976-GeM-Bidding-8120353_Published%20(1).pdf",
+    "context": "GeM-Bidding-8120353_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/25c34537-8854-469b-980b-e5088f1f7d26-GeM-Bidding-8106198_Published%20(1).pdf",
+    "context": "GeM-Bidding-8106198_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/822b39f7-7b19-4972-888e-c9df25f14e76-GeM-Bidding-8064408_Published%20(1).pdf",
+    "context": "GeM-Bidding-8064408_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  },
+  {
+    "url": "https://nitjsr.ac.in/backend/uploads/tender/add/c69e2230-6d0c-4860-9104-e55d6484e5b6-GeM-Bidding-8051752_Published%20(1).pdf",
+    "context": "GeM-Bidding-8051752_Published (1)",
+    "parsed_rfp_data": "Text content not provided for detailed extraction."
+  }
+]
+```
